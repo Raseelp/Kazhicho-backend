@@ -21,6 +21,8 @@ func AdminRoutes(r *gin.Engine) {
 	admin.Use(middleware.AuthMiddleware())
 	{
 		admin.GET("/get-foodspot-requests", services.GetfoodSpotRequests)
+		admin.POST("/foodspot-request/:id/approve", services.ApproveFoodSpotRequest)
+		admin.DELETE("foodspot-request/:id/reject", services.RejectFoodSpotRequest)
 	}
 }
 
