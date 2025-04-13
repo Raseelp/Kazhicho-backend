@@ -92,14 +92,23 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"Error": "Invalid Username or Password"})
 		return
 	}
+
 	//Genarate auth token
 	token, err := utils.GenarateJWT(loginData.Username)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to genarate Token"})
 		return
 	}
+	if storedLogin.Type == "admin" {
+		c.JSON(http.StatusOK, gin.H{"Message": "Admin Login Successful", "token": token, "type": "admin"})
+		return
+	}
+	if storedLogin.Type == "restaurant" {
+		c.JSON(http.StatusOK, gin.H{"Message": "restaurant Login Successful", "token": token, "type": "restaurant"})
+		return
+	}
 
-	c.JSON(http.StatusOK, gin.H{"Message": "Login Successful", "token": token})
+	c.JSON(http.StatusOK, gin.H{"Message": "Login Successful", "token": token, "type": "user"})
 }
 
 func InitCollections(db *mongo.Database) {
