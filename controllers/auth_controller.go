@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"kazhicho-backend/config"
 	"net/http"
 	"time"
 
@@ -65,6 +66,30 @@ func Register(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "User Registered Successfully"})
 }
+
+func Login(c *gin.Context) {
+	var loginData models.Login
+	if err := c.ShouldBindJSON(&loginData); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": "invalid Request"})
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	// Find the user in the login collection by username
+	var storedLogin models.Login
+	err := config.DB.Collection("login").FindOne(ctx, bson.M{"username": loginData.Username}).Decode(&storedLogin)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"Error": "Invalid Username or Password"})
+		return
+	}
+	// Compare the password
+	if !utils.CheckPasswordHash(loginData.Password, storedLogin.Password) {
+		c.JSON(http.StatusUnauthorized, gin.H{"Error": "Invalid Username or Password"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"Message": "Login Successful"})
+}
+
 func InitCollections(db *mongo.Database) {
 	loginCollection = db.Collection("login")
 	userCollection = db.Collection("user")

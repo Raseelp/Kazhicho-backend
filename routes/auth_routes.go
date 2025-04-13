@@ -10,4 +10,7 @@ func AuthRoutes(r *gin.Engine) {
 	{
 		auth.POST("/register", controllers.Register)
 	}
+	{
+		auth.POST("/login", controllers.Login)
+	}
 }
