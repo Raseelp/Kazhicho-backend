@@ -87,7 +87,14 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"Error": "Invalid Username or Password"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"Message": "Login Successful"})
+	//Genarate auth token
+	token, err := utils.GenarateJWT(loginData.Username)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to genarate Token"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"Message": "Login Successful", "token": token})
 }
 
 func InitCollections(db *mongo.Database) {
