@@ -65,7 +65,7 @@ func Register(c *gin.Context) {
 
 	token, err := utils.GenarateJWT(reqBody.Username)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Error Genarating Token"})
+		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Error Generating Token"})
 		return
 	}
 
@@ -96,15 +96,15 @@ func Login(c *gin.Context) {
 	//Genarate auth token
 	token, err := utils.GenarateJWT(loginData.Username)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to genarate Token"})
+		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to generate Token"})
 		return
 	}
 	if storedLogin.Type == "admin" {
 		c.JSON(http.StatusOK, gin.H{"Message": "Admin Login Successful", "token": token, "type": "admin"})
 		return
 	}
-	if storedLogin.Type == "restaurant" {
-		c.JSON(http.StatusOK, gin.H{"Message": "restaurant Login Successful", "token": token, "type": "restaurant"})
+	if storedLogin.Type == "foodspot" {
+		c.JSON(http.StatusOK, gin.H{"Message": "FoodSpot Login Successful", "token": token, "type": "foodspot"})
 		return
 	}
 
