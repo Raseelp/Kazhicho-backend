@@ -64,7 +64,13 @@ func Register(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to save the user details"})
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "User Registered Successfully"})
+	token, err := utils.GenarateJWT(reqBody.Username)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Error Genarating Token"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User Registered Successfully", "token": token})
 }
 
 func Login(c *gin.Context) {
