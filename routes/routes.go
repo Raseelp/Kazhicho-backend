@@ -31,5 +31,6 @@ func UserAndFoodSpotsRoutes(r *gin.Engine) {
 	spot.Use(middleware.AuthMiddleware())
 	{
 		spot.POST("/request-foodspot", services.RequestRegisterFoodSpots)
+		spot.POST("/:foodspot_id/add-fooditem", services.AddFoodItemToFoodSpot)
 	}
 }
