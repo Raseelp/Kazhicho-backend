@@ -1,0 +1,71 @@
+package controllers
+
+import (
+	"context"
+	"net/http"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+
+	"kazhicho-backend/models"
+	"kazhicho-backend/utils"
+)
+
+// var loginCollection *mongo.Collection = config.DB.Collection("login")
+// var userCollection *mongo.Collection = config.DB.Collection("user")
+var loginCollection *mongo.Collection
+var userCollection *mongo.Collection
+
+func Register(c *gin.Context) {
+	var reqBody struct {
+		Username string `bson:"username"`
+		Email    string `bson:"email"`
+		Password string `bson:"password"`
+	}
+	if err := c.BindJSON(&reqBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": "Invalid Request"})
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	// Check if username already exists
+	var existingUser models.Login
+	err := loginCollection.FindOne(ctx, bson.M{"username": reqBody.Username}).Decode(&existingUser)
+	if err == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": "Username already exists"})
+		return
+	}
+	// Hash the password
+	hashedPassword, err := utils.HashPassword(reqBody.Password)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to hash the password"})
+	}
+	// Save to login collection
+	login := models.Login{
+		Username: reqBody.Username,
+		Password: hashedPassword,
+	}
+
+	_, err = loginCollection.InsertOne(ctx, login)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to save the login details"})
+		return
+	}
+
+	user := models.User{
+		Username: reqBody.Username,
+		Email:    reqBody.Email,
+	}
+	_, err = userCollection.InsertOne(ctx, user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to save the user details"})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User Registered Successfully"})
+}
+func InitCollections(db *mongo.Database) {
+	loginCollection = db.Collection("login")
+	userCollection = db.Collection("user")
+}
