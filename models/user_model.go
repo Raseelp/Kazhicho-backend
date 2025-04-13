@@ -6,6 +6,7 @@ type Login struct {
 	ID       primitive.ObjectID `bson:"_id,omitempty"`
 	Username string             `bson:"username"`
 	Password string             `bson:"password"`
+	Type     string             `bson:"type"`
 }
 
 type User struct {

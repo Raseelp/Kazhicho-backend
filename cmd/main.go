@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"kazhicho-backend/controllers"
 	"kazhicho-backend/routes"
+	"kazhicho-backend/services"
 	"log"
 	"net/http"
 
@@ -13,7 +13,7 @@ import (
 
 func main() {
 	config.InitConfig()
-	controllers.InitCollections(config.DB)
+	services.InitCollections(config.DB)
 	router := gin.Default()
 	routes.AuthRoutes(router)
 	router.Run(":8080")

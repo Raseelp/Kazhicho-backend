@@ -2,15 +2,15 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"kazhicho-backend/controllers"
+	"kazhicho-backend/services"
 )
 
 func AuthRoutes(r *gin.Engine) {
 	auth := r.Group("/auth")
 	{
-		auth.POST("/register", controllers.Register)
+		auth.POST("/register", services.Register)
 	}
 	{
-		auth.POST("/login", controllers.Login)
+		auth.POST("/login", services.Login)
 	}
 }

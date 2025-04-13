@@ -1,4 +1,4 @@
-package controllers
+package services
 
 import (
 	"context"
@@ -14,8 +14,6 @@ import (
 	"kazhicho-backend/utils"
 )
 
-// var loginCollection *mongo.Collection = config.DB.Collection("login")
-// var userCollection *mongo.Collection = config.DB.Collection("user")
 var loginCollection *mongo.Collection
 var userCollection *mongo.Collection
 
@@ -47,6 +45,7 @@ func Register(c *gin.Context) {
 	login := models.Login{
 		Username: reqBody.Username,
 		Password: hashedPassword,
+		Type:     "user",
 	}
 
 	_, err = loginCollection.InsertOne(ctx, login)
