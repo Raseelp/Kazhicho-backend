@@ -19,4 +19,9 @@ func AuthRoutes(r *gin.Engine) {
 	{
 		spot.POST("/request-foodspot", services.RequestRegisterFoodSpots)
 	}
+	admin := r.Group("/admin")
+	admin.Use(middleware.AuthMiddleware())
+	{
+		admin.GET("/get-foodspot-requests", services.GetfoodSpotRequests)
+	}
 }
