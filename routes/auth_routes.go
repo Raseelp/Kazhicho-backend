@@ -14,14 +14,20 @@ func AuthRoutes(r *gin.Engine) {
 	{
 		auth.POST("/login", services.Login)
 	}
-	spot := r.Group("/foodspot")
-	spot.Use(middleware.AuthMiddleware())
-	{
-		spot.POST("/request-foodspot", services.RequestRegisterFoodSpots)
-	}
+}
+
+func AdminRoutes(r *gin.Engine) {
 	admin := r.Group("/admin")
 	admin.Use(middleware.AuthMiddleware())
 	{
 		admin.GET("/get-foodspot-requests", services.GetfoodSpotRequests)
+	}
+}
+
+func UserAndFoodSpotsRoutes(r *gin.Engine) {
+	spot := r.Group("/foodspot")
+	spot.Use(middleware.AuthMiddleware())
+	{
+		spot.POST("/request-foodspot", services.RequestRegisterFoodSpots)
 	}
 }
