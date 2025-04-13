@@ -13,4 +13,8 @@ func AuthRoutes(r *gin.Engine) {
 	{
 		auth.POST("/login", services.Login)
 	}
+	spot := r.Group("/foodspot")
+	{
+		spot.POST("/request-foodspot", services.RequestRegisterFoodSpots)
+	}
 }
