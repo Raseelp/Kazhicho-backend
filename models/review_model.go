@@ -6,11 +6,10 @@ import (
 )
 
 type Review struct {
-	ID         primitive.ObjectID `bson:"_id,omitempty"`
-	UserID     primitive.ObjectID `bson:"userID,omitempty"`
-	FoodSpotID primitive.ObjectID `bson:"foodSpotID,omitempty"`
-	Rating     float32            `bson:"rating"`
-	Comment    string             `bson:"comment"`
-	CreatedAt  time.Time          `bson:"createdAt"`
-	Images     []string           `bson:"images"`
+	ID        primitive.ObjectID `bson:"_id,omitempty"`
+	UserID    primitive.ObjectID `bson:"userID,omitempty"`
+	Rating    float32            `bson:"rating"`
+	Comment   string             `bson:"comment"`
+	CreatedAt time.Time          `bson:"createdAt"`
+	Images    []string           `bson:"images"`
 }
