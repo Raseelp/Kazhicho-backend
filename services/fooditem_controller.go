@@ -50,5 +50,4 @@ func AddFoodItemToFoodSpot(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Food Item Added Successfully", "foodItemID": foodItemID.Hex()})
-
 }
