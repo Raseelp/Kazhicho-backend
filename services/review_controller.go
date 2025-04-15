@@ -50,3 +50,41 @@ func AddReview(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Review Added Successfully", "review_id": reviewID.Hex()})
 
 }
+
+type DeleteReviewRequest struct {
+	ReviewID string `json:"reviewID"`
+}
+
+func DeleteReview(c *gin.Context) {
+	var request DeleteReviewRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": "Invalid Request body"})
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	//convert string ID into OObject ID
+	ReviewID, err := primitive.ObjectIDFromHex(request.ReviewID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": "Invalid Review ID"})
+		return
+	}
+
+	//delete the deal from deals collection
+	ReviewCollection := config.DB.Collection("reviews")
+
+	result, err := ReviewCollection.DeleteOne(ctx, bson.M{"_id": ReviewID})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to delete from the Review collection"})
+		return
+	}
+
+	if result.DeletedCount == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"message": "Review does not exist or already deleted"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Review removed successfully"})
+
+}

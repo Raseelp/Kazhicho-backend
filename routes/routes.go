@@ -37,6 +37,7 @@ func UserAndFoodSpotsRoutes(r *gin.Engine) {
 		spot.PUT("/edit-fooditem", services.EditFoodItem)
 		spot.PUT("/remove-fooditem-inmenu", services.RemoveFoodItemFromMenu)
 		spot.DELETE("/delete-deal", services.DeleteDeal)
+		spot.DELETE("/delete-Review", services.DeleteReview)
 	}
 	user := r.Group("/user")
 	user.Use(middleware.AuthMiddleware())
