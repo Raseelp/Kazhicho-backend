@@ -39,5 +39,6 @@ func UserAndFoodSpotsRoutes(r *gin.Engine) {
 	{
 		user.POST("/:foodspot_id/add-review", services.AddReview)
 		user.POST("/add-list", services.AddList)
+		user.POST("/upload-reel", services.UploadReel)
 	}
 }
