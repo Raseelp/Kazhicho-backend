@@ -88,7 +88,7 @@ func EditFoodItem(c *gin.Context) {
 	}
 
 	if result.MatchedCount == 0 {
-		c.JSON(http.StatusOK, gin.H{"message": "food item does not exist"})
+		c.JSON(http.StatusNotFound, gin.H{"message": "food item does not exist"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "food item updated Successfully"})

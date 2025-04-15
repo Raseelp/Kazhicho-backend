@@ -145,3 +145,49 @@ func RejectFoodSpotRequest(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Food spot request rejected and removed"})
 }
+
+type RemoveMenuItemRequest struct {
+	FoodSpotID string `json:"foodSpotID"`
+	FoodItemID string `json:"foodItemID"`
+}
+
+func RemoveFoodItemFromMenu(c *gin.Context) {
+
+	var request RemoveMenuItemRequest
+
+	//parse the request
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": "Invalid Request body"})
+		return
+	}
+
+	//convert String ID into Object ID
+	foodSpotID, err := primitive.ObjectIDFromHex(request.FoodSpotID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": "Invalid FoodSpot ID"})
+		return
+	}
+	foodItemID, err := primitive.ObjectIDFromHex(request.FoodItemID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": "Invalid FoodItem ID"})
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	//update the document by removing the menuitem by id
+	foodSpotCollection := config.DB.Collection("foodspot")
+
+	update := bson.M{"$pull": bson.M{"menu": foodItemID}}
+
+	result, err := foodSpotCollection.UpdateOne(ctx, bson.M{"_id": foodSpotID}, update)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to remove food item from the foodSpot menu"})
+		return
+	}
+	if result.ModifiedCount == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"Error": "Matching item not found or already removed"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "food item removed successfully"})
+}
