@@ -191,3 +191,69 @@ func RemoveFoodItemFromMenu(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "food item removed successfully"})
 }
+
+type DeleteFoodSpotRequest struct {
+	FoodSpotID string `json:"foodSpotID"`
+}
+
+func DeleteFoodSpotAdmin(c *gin.Context) {
+	var request DeleteFoodSpotRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": "Invalid Request Body"})
+		return
+	}
+
+	//convert the id string to object id
+	foodSpotID, err := primitive.ObjectIDFromHex(request.FoodSpotID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": "Invalid food spot id"})
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	//find the foodspot to delete by the ID
+	foodSpotCollection := config.DB.Collection("foodspot")
+	var foodSpot models.FoodSpot
+	err = foodSpotCollection.FindOne(ctx, bson.M{"_id": foodSpotID}).Decode(&foodSpot)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": "FoodSpot does not found or already deleted"})
+		return
+	}
+
+	//delete the related foodItems of menu first
+	if len(foodSpot.Menu) > 0 {
+		_, err = foodSpotCollection.DeleteOne(ctx, bson.M{"_id": bson.M{"in": foodSpot.Menu}})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to delete the menu items of the foodSpot"})
+			return
+		}
+	}
+
+	//delete the related foodReviews next
+	if len(foodSpot.Reviews) > 0 {
+		_, err := config.DB.Collection("reviews").DeleteMany(ctx, bson.M{"_id": bson.M{"$in": foodSpot.Reviews}})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to delete the food Reviews of the foodSpot"})
+			return
+		}
+	}
+
+	//delete the related deals next
+	if len(foodSpot.TodaysDeals) > 0 {
+		_, err := config.DB.Collection("deals").DeleteMany(ctx, bson.M{"_id": bson.M{"$in": foodSpot.TodaysDeals}})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to delete the food Reviews of the foodSpot"})
+			return
+		}
+	}
+
+	// Finally, delete the FoodSpot itself
+	_, err = foodSpotCollection.DeleteOne(ctx, bson.M{"_id": foodSpotID})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete FoodSpot"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "FoodSpot Removed Successfully"})
+}
