@@ -49,3 +49,41 @@ func AddDeal(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Deal Added Successfully", "deal_id": dealID.Hex()})
 }
+
+type DeleteDealRequest struct {
+	DealID string `json:"dealID"`
+}
+
+func DeleteDeal(c *gin.Context) {
+	var request DeleteDealRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": "Invalid Request body"})
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	//convert string ID into OObject ID
+	dealID, err := primitive.ObjectIDFromHex(request.DealID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": "Invalid Deal ID"})
+		return
+	}
+
+	//delete the deal from deals collection
+	dealsCollection := config.DB.Collection("deals")
+
+	result, err := dealsCollection.DeleteOne(ctx, bson.M{"_id": dealID})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Failed to delete from the collection"})
+		return
+	}
+
+	if result.DeletedCount == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"message": "Deal does not exist or already deleted"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Deal removed successfully"})
+
+}
