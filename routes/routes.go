@@ -33,6 +33,7 @@ func UserAndFoodSpotsRoutes(r *gin.Engine) {
 		spot.POST("/request-foodspot", services.RequestRegisterFoodSpots)
 		spot.POST("/:foodspot_id/add-fooditem", services.AddFoodItemToFoodSpot)
 		spot.POST("/:foodspot_id/add-Deal", services.AddDeal)
+		spot.PUT("/edit-fooditem", services.EditFoodItem)
 	}
 	user := r.Group("/user")
 	user.Use(middleware.AuthMiddleware())

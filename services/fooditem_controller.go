@@ -51,3 +51,46 @@ func AddFoodItemToFoodSpot(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Food Item Added Successfully", "foodItemID": foodItemID.Hex()})
 }
+
+type EditFoodItemRequest struct {
+	FoodItemID string                 `json:"foodItemID"`
+	Updates    map[string]interface{} `json:"updates"`
+}
+
+func EditFoodItem(c *gin.Context) {
+	//getting request and parsing it to id and updates
+	var request EditFoodItemRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	//parsing the id to object id from string
+	itemID, err := primitive.ObjectIDFromHex(request.FoodItemID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": "Invalid food item body"})
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	//remove the id field in the interface because I don't want to try to change an immutable field like _id
+	delete(request.Updates, "_id")
+
+	//set the new values to the old document
+	update := bson.M{"$set": request.Updates}
+	foodItemCollection := config.DB.Collection("fooditem")
+	result, err := foodItemCollection.UpdateOne(ctx, bson.M{"_id": itemID}, update)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"Error": "failed to Update the food spot menu"})
+		return
+	}
+
+	if result.MatchedCount == 0 {
+		c.JSON(http.StatusOK, gin.H{"message": "food item does not exist"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "food item updated Successfully"})
+
+}
